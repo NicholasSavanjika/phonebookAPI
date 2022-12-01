@@ -1,4 +1,80 @@
-﻿namespace PBLIB;
+﻿namespace NpgSqlExample.models
+{
+    public class Person
+    {
+        public string Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+
+        public Person() {}
+        
+        public Person(string id, string first_name, string last_name)
+        {
+            Id = id;
+            FirstName = first_name;
+            LastName = last_name;
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*namespace PBLIB;
 
 public class Person
 {
@@ -43,3 +119,4 @@ public class Phonebook
         return null;
     }
 }
+*/
