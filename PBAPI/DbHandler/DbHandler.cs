@@ -11,23 +11,23 @@ namespace PBAPI.DbHandler
             "Database=elsa_phonebook";
         private NpgsqlConnection connection = new NpgsqlConnection(CONNECTION_STRING);
 
-        public List<Person> GetPersons() {
+        public List<Contact> GetAllContacts() {
             // start connection
             this.connection.Open();
 
             // set up a query
-            NpgsqlCommand command = new NpgsqlCommand("Select * from person_name;", this.connection);
+            NpgsqlCommand command = new NpgsqlCommand("SELECT person_name.id, CONCAT(first_name , ' ' , last_name) AS name, contact_number FROM person_name, phone_book WHERE person_name.id=phone_book.id;", this.connection);
 
             // execute the query
             NpgsqlDataReader reader = command.ExecuteReader();
-            var persons = new List<Person>();
+            var contacts = new List<Contact>();
 
             while(reader.Read()) {
                 System.Console.WriteLine($"{reader[0]} {reader[1]} {reader[2]}");
-                persons.Add(new Person(reader[0].ToString(), reader[1].ToString(), reader[2].ToString()));
+                contacts.Add(new Contact(reader[0].ToString(), reader[1].ToString(), reader[2].ToString()));
             }
 
-            return persons;
+            return contacts;
         }
     }
 }

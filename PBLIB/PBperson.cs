@@ -1,18 +1,18 @@
 ﻿namespace NpgSqlExample.models
 {
-    public class Person
+    public class Contact
     {
         public string Id { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
+        public string Name { get; set; }
+        public string ContactNumber { get; set; }
 
-        public Person() {}
+        public Contact() {}
         
-        public Person(string id, string first_name, string last_name)
+        public Contact(string id, string name, string contact_number)
         {
             Id = id;
-            FirstName = first_name;
-            LastName = last_name;
+            Name = name;
+            ContactNumber = contact_number;
         }
     }
 }
