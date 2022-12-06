@@ -6,9 +6,9 @@ namespace PBAPI.DbHandler
     public class DbHandler
     {
         private const string CONNECTION_STRING = "Host=db.wifiandinternetsolutions.com.au;" +
-            "Username=elsa;" +
+            "Username=dtpphoneuser;" +
             "Password=kangan;" +
-            "Database=elsa_phonebook";
+            "Database=dtpphonebook";
         private NpgsqlConnection connection;
 
         public DbHandler() {
