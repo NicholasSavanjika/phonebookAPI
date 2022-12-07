@@ -22,22 +22,38 @@ namespace PBAPI.DbHandler
 
 
             // set up a query
-            NpgsqlCommand command = new NpgsqlCommand("SELECT person_name.id, CONCAT(first_name , ' ' , last_name) AS name, contact_number FROM person_name, phone_book WHERE person_name.id=phone_book.id;", this.connection);
+            string query = "SELECT person_name.id, CONCAT(first_name , ' ' , last_name) AS name, contact_number FROM person_name, phone_book WHERE person_name.id=phone_book.id;";
             var contacts = new List<Contact>();
 
             // execute the query
-
-
-            using (NpgsqlDataReader reader = await command.ExecuteReaderAsync())
-            {
-                while (await reader.ReadAsync())
-                {
-                    System.Console.WriteLine($"{reader[0]} {reader[1]} {reader[2]}");
-                    contacts.Add(new Contact(reader[0].ToString(), reader[1].ToString(), reader[2].ToString()));
+            try {
+                if (this.connection.State == System.Data.ConnectionState.Closed) {
+                    await this.connection.OpenAsync();
                 }
+                NpgsqlCommand command = new NpgsqlCommand(query, this.connection);
+
+                using (NpgsqlDataReader reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        System.Console.WriteLine($"{reader[0]} {reader[1]} {reader[2]}");
+                        contacts.Add(new Contact(reader[0].ToString(), reader[1].ToString(), reader[2].ToString()));
+                    }
+                }
+
+                
+            } catch (Exception e) {
+                contacts = new List<Contact>();
+                System.Console.WriteLine(e.Message);
+            } finally {
+                this.connection.CloseAsync();
+                return contacts;
+                
             }
 
-            return contacts;
+            
+
+            
         }
     }
 }
