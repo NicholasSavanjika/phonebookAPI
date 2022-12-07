@@ -47,13 +47,10 @@ namespace PBAPI.DbHandler
                 System.Console.WriteLine(e.Message);
             } finally {
                 this.connection.CloseAsync();
-                return contacts;
+                
                 
             }
-
-            
-
-            
+            return contacts;            
         }
     }
 }
