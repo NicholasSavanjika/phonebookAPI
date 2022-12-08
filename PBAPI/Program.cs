@@ -18,7 +18,7 @@ var dbHandler = new DbHandler();
 
 app.MapGet("/contacts", () => dbHandler.GetAllContacts());
 // app.MapPost("/contact", (string Name, int phone) => phonebook.AddPerson(Name, phone));
-// app.MapGet("/contact", (string search) => phonebook.FindByName(search));
+app.MapGet("/contact", (string searchTerm) => dbHandler.GetContact(searchTerm));
 
 
 app.Run();
