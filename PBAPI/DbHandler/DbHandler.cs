@@ -27,7 +27,15 @@ namespace PBAPI.DbHandler
 
             // execute the query
             try {
-                if (this.connection.State == System.Data.ConnectionState.Closed) {
+                await using var dataSource = NpgsqlDataSource.Create(CONNECTION_STRING);
+                await using var command = dataSource.CreateCommand(query);
+                await using var reader = await command.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    System.Console.WriteLine($"{reader[0]} {reader[1]} {reader[2]}");
+                    contacts.Add(new Contact(reader[0].ToString(), reader[1].ToString(), reader[2].ToString()));
+                }
+                /*if (this.connection.State == System.Data.ConnectionState.Closed) {
                     await this.connection.OpenAsync();
                 }
                 NpgsqlCommand command = new NpgsqlCommand(query, this.connection);
@@ -39,7 +47,7 @@ namespace PBAPI.DbHandler
                         System.Console.WriteLine($"{reader[0]} {reader[1]} {reader[2]}");
                         contacts.Add(new Contact(reader[0].ToString(), reader[1].ToString(), reader[2].ToString()));
                     }
-                }
+                }*/
 
                 
             } catch (Exception e) {
@@ -62,7 +70,18 @@ namespace PBAPI.DbHandler
             
             // execute the query
             try {
-                if (this.connection.State == System.Data.ConnectionState.Closed) {
+                await using var dataSource = NpgsqlDataSource.Create(CONNECTION_STRING);
+                await using var command = dataSource.CreateCommand(query2);
+                command.Parameters.Add(new("p1", searchTerm));
+                
+
+                await using var reader = await command.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    System.Console.WriteLine($"{reader[0]} {reader[1]} {reader[2]}");
+                    contact.Add(new Contact(reader[0].ToString(), reader[1].ToString(), reader[2].ToString()));
+                }
+                /*if (this.connection.State == System.Data.ConnectionState.Closed) {
                     await this.connection.OpenAsync();
                 }
                 NpgsqlCommand command = new NpgsqlCommand(query2, this.connection)
@@ -79,7 +98,7 @@ namespace PBAPI.DbHandler
                         System.Console.WriteLine($"{reader[0]} {reader[1]} {reader[2]}");
                         contact.Add(new Contact(reader[0].ToString(), reader[1].ToString(), reader[2].ToString()));
                     }
-                }
+                }*/
 
                 
             } catch (Exception e) {
@@ -93,53 +112,64 @@ namespace PBAPI.DbHandler
             return contact;
         }
         //Add new contact
-        public async Task<Contact> AddContact(string addName, string addNumber) {
+        public async Task<Contact?> AddContact(Contact newContact) {
+
+            if (newContact.Name == "" || newContact.Name == null){
+                return null;
+            }
+
 
             // Location of the space
-            int index = addName.IndexOf(" ");
+            int index = newContact.Name.IndexOf(" ");
             
             // Get first name
-            string firstName =  addName.Substring(0, index);
+            string firstName =  newContact.Name.Substring(0, index);
             
             // Get last name
-            string lastName = addName.Substring(index + 1);
+            string lastName = newContact.Name.Substring(index + 1);
 
             // set up a query
             string query3 = "WITH add_person AS (INSERT INTO person_name (first_name, last_name) VALUES (@p1, @p2) RETURNING ID) INSERT INTO phone_book (id, contact_type, contact_number) SELECT id, 'Mobile', @p3 FROM add_person;";
             firstName = $"{firstName}";
             lastName = $"{lastName}";
-            addNumber = $"{addNumber}";
+            newContact.ContactNumber = $"{newContact.ContactNumber}";
             var addContact = new Contact();
             
 
             // execute the query
             try {
-                if (this.connection.State == System.Data.ConnectionState.Closed) {
-                    await this.connection.OpenAsync();
-                }
-                NpgsqlCommand command = new NpgsqlCommand(query3, this.connection)
-                {
-                    Parameters =
-                    {
-                        new("p1", firstName),
-                        new("p2", lastName),
-                        new("p3", addNumber)
-                    }
-                };
+                await using var dataSource = NpgsqlDataSource.Create(CONNECTION_STRING);
+                await using var command = dataSource.CreateCommand(query3);
+                command.Parameters.Add(new("p1", firstName));
+                command.Parameters.Add(new("p2", lastName));
+                command.Parameters.Add(new("p3", newContact.ContactNumber));
 
-                var result = command.ExecuteNonQuery();
+                var result = await command.ExecuteNonQueryAsync();
+                System.Console.WriteLine(result);
+                
+                // if (this.connection.State == System.Data.ConnectionState.Closed) {
+                //     await this.connection.OpenAsync();
+                // }
+                // NpgsqlCommand command = new NpgsqlCommand(query3, this.connection)
+                // {
+                //     Parameters =
+                //     {
+                //         new("p1", firstName),
+                //         new("p2", lastName),
+                //         new("p3", newContact.ContactNumber)
+                //     }
+                // };
 
-                addContact.Name = firstName;
-                return addContact;
+                //var result = command.ExecuteNonQuery();
+
+                //addContact.Name = firstName;
+                return newContact;
             } catch (Exception e) {
-                addContact = new Contact();
+                newContact = new Contact();
                 System.Console.WriteLine(e.Message);
-            } finally {
-                this.connection.CloseAsync();
-                
-                
-            }
-            return addContact;
+            } 
+            
+            return newContact;
         
         }
         //Delete existing contact

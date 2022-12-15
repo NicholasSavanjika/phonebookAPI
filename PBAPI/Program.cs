@@ -1,4 +1,5 @@
 using PBAPI.DbHandler;
+using NpgSqlExample.models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +18,7 @@ var dbHandler = new DbHandler();
 
 
 app.MapGet("/contacts", () => dbHandler.GetAllContacts());
-app.MapGet("/addContact", (string addName, string addNumber) => dbHandler.AddContact(addName, addNumber));
+app.MapPost("/contact", (Contact newContact) => dbHandler.AddContact(newContact));
 app.MapGet("/contact", (string searchTerm) => dbHandler.GetContact(searchTerm));
 
 
