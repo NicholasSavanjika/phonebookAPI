@@ -173,49 +173,57 @@ namespace PBAPI.DbHandler
         
         }
         //Delete existing contact
-        /*public async Task<List<Contact>> DeleteContact(string addName, string addNumber) {
+        public async Task<Contact?> DeleteContact(int id) {
 
 
             // set up a query
-            string query3 = "WITH add_person AS (INSERT INTO person_name (first_name, last_name) VALUES (@p1) RETURNING ID) INSERT INTO phone_book (id, contact_type, contact_number) SELECT id, 'Mobile', @p2 FROM add_person;";
-            addName = $"%{addName}%";
-            addNumber = $"%{addNumber}%";
-            var addContact = new List<Contact>();
+            string query4 = "WITH delete_person AS (DELETE FROM person_name WHERE person_name.id = @p1 RETURNING ID ) DELETE FROM phone_book WHERE phone_book.id IN (SELECT ID FROM delete_person)";
+
+            var deleteContact = new Contact();
             
 
             // execute the query
             try {
-                if (this.connection.State == System.Data.ConnectionState.Closed) {
-                    await this.connection.OpenAsync();
-                }
-                NpgsqlCommand command = new NpgsqlCommand(query3, this.connection)
-                {
-                    Parameters =
-                    {
-                        new("p1", addName),
-                        new("p2", addNumber)
-                    }
-                };
-                using (NpgsqlDataReader reader = await command.ExecuteReaderAsync())
-                {
-                    while (await reader.ReadAsync())
-                    {
-                        System.Console.WriteLine($"{reader[0]} {reader[1]} {reader[2]}");
-                        addContact.Add(new Contact(reader[0].ToString(), reader[1].ToString(), reader[2].ToString()));
-                    }
-                }
+                await using var dataSource = NpgsqlDataSource.Create(CONNECTION_STRING);
+                await using var command = dataSource.CreateCommand(query4);
+                command.Parameters.Add(new("p1", id));
+                
+                var result = await command.ExecuteNonQueryAsync();
+                System.Console.WriteLine(result);
 
-                
             } catch (Exception e) {
-                addContact = new List<Contact>();
+                deleteContact = new Contact();
                 System.Console.WriteLine(e.Message);
-            } finally {
-                this.connection.CloseAsync();
-                
-                
             }
-            return addContact;
+            return deleteContact;
+        
+        }
+        //Update existing contact
+        /*public async Task<Contact?> UpdateContact(string id) {
+
+
+            // set up a query
+            string query4 = "WITH delete_person AS (DELETE FROM person_name WHERE person_name.id = @p1 RETURNING ID ) DELETE FROM phone_book WHERE phone_book.id IN (SELECT ID FROM delete_person)";
+            id = $"%{id}%";
+            var deleteContact = new Contact();
+            
+
+            // execute the query
+            try {
+                await using var dataSource = NpgsqlDataSource.Create(CONNECTION_STRING);
+                await using var command = dataSource.CreateCommand(query4);
+                command.Parameters.Add(new("p1", id));
+                
+                var result = await command.ExecuteNonQueryAsync();
+                System.Console.WriteLine(result);
+
+            } catch (Exception e) {
+                deleteContact = new Contact();
+                System.Console.WriteLine(e.Message);
+            }
+            return deleteContact;
         
         }*/
+
     }
 }
