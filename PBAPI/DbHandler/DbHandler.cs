@@ -192,7 +192,7 @@ namespace PBAPI.DbHandler
                 System.Console.WriteLine(result);
 
                 if (result == 1) {
-                    deleteContact.id = "Deleted";
+                    deleteContact.Id = "Deleted";
                 }
                 return deleteContact;
 
