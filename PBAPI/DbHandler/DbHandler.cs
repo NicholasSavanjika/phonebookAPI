@@ -191,6 +191,12 @@ namespace PBAPI.DbHandler
                 var result = await command.ExecuteNonQueryAsync();
                 System.Console.WriteLine(result);
 
+                if (result == 1) {
+                    deleteContact.id = "Deleted";
+                }
+                return deleteContact;
+
+
             } catch (Exception e) {
                 deleteContact = new Contact();
                 System.Console.WriteLine(e.Message);
