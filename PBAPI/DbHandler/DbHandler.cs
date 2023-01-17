@@ -117,7 +117,11 @@ namespace PBAPI.DbHandler
             /*if (newContact.Name.All(Char.IsDigit) == false){
                 return null;
             }*/
-            if (newContact.Name == "" || newContact.Name == null){
+            int contactNumberCheck;
+            if (int.TryParse(newContact.ContactNumber, out contactNumberCheck) == false) {
+                return null;
+            }
+            if (newContact.Name == "" || newContact.Name == null) {
                 return null;
             }
             string firstName = null;
