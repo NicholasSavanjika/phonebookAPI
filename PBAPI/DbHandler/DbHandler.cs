@@ -64,7 +64,7 @@ namespace PBAPI.DbHandler
         public async Task<List<Contact>> GetContact(string searchTerm) {
 
             // set up a query
-            string query2 = "SELECT person_name.id, CONCAT(first_name, ' ', last_name) AS NAME, contact_number FROM person_name, phone_book WHERE person_name.id=phone_book.id AND (first_name LIKE @p1 OR last_name LIKE @p1);"; // "OR NAME LIKE @p1" needs to be added
+            string query2 = "SELECT person_name.id, CONCAT(first_name, ' ', last_name) AS NAME, contact_number FROM person_name, phone_book WHERE person_name.id=phone_book.id AND (first_name ILIKE @p1 OR last_name ILIKE @p1);"; // "OR NAME LIKE @p1" needs to be added
             searchTerm = $"%{searchTerm}%";
             var contact = new List<Contact>();
             
@@ -113,20 +113,30 @@ namespace PBAPI.DbHandler
         }
         //Add new contact
         public async Task<Contact?> AddContact(Contact newContact) {
-
+            
+            /*if (newContact.Name.All(Char.IsDigit) == false){
+                return null;
+            }*/
             if (newContact.Name == "" || newContact.Name == null){
                 return null;
             }
+            string firstName = null;
+            string lastName = null;
+            if (newContact.Name.Contains(" ")) {
 
-
-            // Location of the space
-            int index = newContact.Name.IndexOf(" ");
             
-            // Get first name
-            string firstName =  newContact.Name.Substring(0, index);
+                // Location of the space
+                int index = newContact.Name.IndexOf(" ");
             
-            // Get last name
-            string lastName = newContact.Name.Substring(index + 1);
+                // Get first name
+                firstName =  newContact.Name.Substring(0, index);
+            
+                // Get last name
+                lastName = newContact.Name.Substring(index + 1);
+            }
+            else {
+                firstName = newContact.Name;
+            }
 
             // set up a query
             string query3 = "WITH add_person AS (INSERT INTO person_name (first_name, last_name) VALUES (@p1, @p2) RETURNING ID) INSERT INTO phone_book (id, contact_type, contact_number) SELECT id, 'Mobile', @p3 FROM add_person;";
