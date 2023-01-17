@@ -64,7 +64,7 @@ namespace PBAPI.DbHandler
         public async Task<List<Contact>> GetContact(string searchTerm) {
 
             // set up a query
-            string query2 = "SELECT person_name.id, CONCAT(first_name, ' ', last_name) AS NAME, contact_number FROM person_name, phone_book WHERE person_name.id=phone_book.id AND (first_name ILIKE @p1 OR last_name ILIKE @p1);"; // "OR NAME LIKE @p1" needs to be added
+            string query2 = "SELECT * FROM (SELECT person_name.id, CONCAT(first_name , ' ' , last_name) AS name, contact_number FROM person_name, phone_book WHERE person_name.id=phone_book.id) AS nameOutput WHERE name ILIKE @p1;";
             searchTerm = $"%{searchTerm}%";
             var contact = new List<Contact>();
             
