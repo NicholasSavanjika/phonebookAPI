@@ -21,7 +21,7 @@ app.MapGet("/contacts", () => dbHandler.GetAllContacts());
 app.MapPost("/contact", (Contact newContact) => dbHandler.AddContact(newContact));
 app.MapGet("/contact", (string searchTerm) => dbHandler.GetContact(searchTerm));
 app.MapDelete("/contact", (int id) => dbHandler.DeleteContact(id));
-//app.MapPut("/contact", (string id) => dbHandler.UpdateContact(id));
+app.MapPut("/contact", (Contact updateContact) => dbHandler.UpdateContact(updateContact));
 
 
 app.Run();

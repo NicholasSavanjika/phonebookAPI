@@ -219,31 +219,68 @@ namespace PBAPI.DbHandler
         
         }
         //Update existing contact
-        /*public async Task<Contact?> UpdateContact(string id) {
+        public async Task<Contact?> UpdateContact(Contact updateContact) {
+            
+            if(updateContact.Id == "" || updateContact.Id == null) {
+                return null;
+            }
+            int contactNumberCheck;
+            if (int.TryParse(updateContact.ContactNumber, out contactNumberCheck) == false) {
+                return null;
+            }
+            if (updateContact.Name == "" || updateContact.Name == null) {
+                return null;
+            }
+            int updateId;
+            Int32.TryParse(updateContact.Id, out updateId);
+            string updateFirstName = null;
+            string updateLastName = null;
+            if (updateContact.Name.Contains(" ")) {
 
+            
+                // Location of the space
+                int index = updateContact.Name.IndexOf(" ");
+            
+                // Get first name
+                updateFirstName =  updateContact.Name.Substring(0, index);
+            
+                // Get last name
+                updateLastName = updateContact.Name.Substring(index + 1);
+            }
+            else {
+                updateFirstName = updateContact.Name;
+            }
 
             // set up a query
-            string query4 = "WITH delete_person AS (DELETE FROM person_name WHERE person_name.id = @p1 RETURNING ID ) DELETE FROM phone_book WHERE phone_book.id IN (SELECT ID FROM delete_person)";
-            id = $"%{id}%";
-            var deleteContact = new Contact();
+            string query5 = "WITH upd1 AS (	UPDATE person_name SET first_name= @p1, last_name= @p2 WHERE id= @p4 returning id) UPDATE phone_book SET contact_number= @p3 FROM upd1 WHERE upd1.id=phone_book.id;";
+            
+            updateFirstName = $"{updateFirstName}";
+            updateLastName = $"{updateLastName}";
+            updateContact.ContactNumber = $"{updateContact.ContactNumber}";
+
             
 
             // execute the query
             try {
                 await using var dataSource = NpgsqlDataSource.Create(CONNECTION_STRING);
-                await using var command = dataSource.CreateCommand(query4);
-                command.Parameters.Add(new("p1", id));
-                
+                await using var command = dataSource.CreateCommand(query5);
+                command.Parameters.Add(new("p1", updateFirstName));
+                command.Parameters.Add(new("p2", updateLastName));
+                command.Parameters.Add(new("p3", updateContact.ContactNumber));
+                command.Parameters.Add(new("p4", updateId));
+
                 var result = await command.ExecuteNonQueryAsync();
                 System.Console.WriteLine(result);
-
+                
+                return updateContact;
             } catch (Exception e) {
-                deleteContact = new Contact();
+                updateContact = new Contact();
                 System.Console.WriteLine(e.Message);
-            }
-            return deleteContact;
+            } 
+            
+            return updateContact;
         
-        }*/
+        }
 
     }
 }
