@@ -23,7 +23,7 @@ namespace PBAPI.DbHandler
 
 
             // set up a query to get all contacts
-            string query = "SELECT person_name.id, CONCAT(first_name , ' ' , last_name) AS name, contact_number FROM person_name, phone_book WHERE person_name.id=phone_book.id;";
+            string query = "SELECT person_name.id, first_name, last_name, contact_number FROM person_name, phone_book WHERE person_name.id=phone_book.id;";
             var contacts = new List<Contact>();
 
             // execute the query to get all contacts
@@ -33,8 +33,8 @@ namespace PBAPI.DbHandler
                 await using var reader = await command.ExecuteReaderAsync();
                 while (await reader.ReadAsync())
                 {
-                    System.Console.WriteLine($"{reader[0]} {reader[1]} {reader[2]}");
-                    contacts.Add(new Contact(reader[0].ToString(), reader[1].ToString(), reader[2].ToString()));
+                    System.Console.WriteLine($"{reader[0]} {reader[1]} {reader[2]} {reader[3]}");
+                    contacts.Add(new Contact(reader[0].ToString(), reader[1].ToString(), reader[2].ToString(), reader[3].ToString()));
                 }
             // prevent API from crashing if error occurs
             } catch (Exception e) {
@@ -52,7 +52,7 @@ namespace PBAPI.DbHandler
         public async Task<List<Contact>> GetContact(string searchTerm) {
 
             // set up a query to search for contacts
-            string query2 = "SELECT * FROM (SELECT person_name.id, CONCAT(first_name , ' ' , last_name) AS name, contact_number FROM person_name, phone_book WHERE person_name.id=phone_book.id) AS nameOutput WHERE name ILIKE @p1;";
+            string query2 = "SELECT id, first_name, last_name, contact_number FROM (SELECT person_name.id, first_name, last_name, CONCAT(first_name , ' ' , last_name) AS name, contact_number FROM person_name, phone_book WHERE person_name.id=phone_book.id) AS nameOutput WHERE name ILIKE @p1;";
             searchTerm = $"%{searchTerm}%";
             var contact = new List<Contact>();
             
@@ -66,8 +66,8 @@ namespace PBAPI.DbHandler
                 await using var reader = await command.ExecuteReaderAsync();
                 while (await reader.ReadAsync())
                 {
-                    System.Console.WriteLine($"{reader[0]} {reader[1]} {reader[2]}");
-                    contact.Add(new Contact(reader[0].ToString(), reader[1].ToString(), reader[2].ToString()));
+                    System.Console.WriteLine($"{reader[0]} {reader[1]} {reader[2]} {reader[3]}");
+                    contact.Add(new Contact(reader[0].ToString(), reader[1].ToString(), reader[2].ToString(), reader[3].ToString()));
                 }
             // prevent API from crashing if error occurs    
             } catch (Exception e) {
@@ -88,10 +88,10 @@ namespace PBAPI.DbHandler
             if (int.TryParse(newContact.ContactNumber, out contactNumberCheck) == false) {
                 return null;
             }
-            if (newContact.Name == "" || newContact.Name == null) {
+            if (newContact.FirstName == "" || newContact.FirstName == null) {
                 return null;
             }
-            string firstName = null;
+            /*string firstName = null;
             string lastName = null;
             // check if contact has a last name
             if (newContact.Name.Contains(" ")) {
@@ -108,12 +108,12 @@ namespace PBAPI.DbHandler
             }
             else {
                 firstName = newContact.Name;
-            }
+            }*/
 
             // set up a query to add a contact
             string query3 = "WITH add_person AS (INSERT INTO person_name (first_name, last_name) VALUES (@p1, @p2) RETURNING ID) INSERT INTO phone_book (id, contact_type, contact_number) SELECT id, 'Mobile', @p3 FROM add_person;";
-            firstName = $"{firstName}";
-            lastName = $"{lastName}";
+            newContact.FirstName = $"{newContact.FirstName}";
+            newContact.LastName = $"{newContact.LastName}";
             newContact.ContactNumber = $"{newContact.ContactNumber}";
             var addContact = new Contact();
             
@@ -122,8 +122,8 @@ namespace PBAPI.DbHandler
             try {
                 await using var dataSource = NpgsqlDataSource.Create(CONNECTION_STRING);
                 await using var command = dataSource.CreateCommand(query3);
-                command.Parameters.Add(new("p1", firstName));
-                command.Parameters.Add(new("p2", lastName));
+                command.Parameters.Add(new("p1", newContact.FirstName));
+                command.Parameters.Add(new("p2", newContact.LastName));
                 command.Parameters.Add(new("p3", newContact.ContactNumber));
 
                 var result = await command.ExecuteNonQueryAsync();
@@ -182,12 +182,12 @@ namespace PBAPI.DbHandler
             if (int.TryParse(updateContact.ContactNumber, out contactNumberCheck) == false) {
                 return null;
             }
-            if (updateContact.Name == "" || updateContact.Name == null) {
+            if (updateContact.FirstName == "" || updateContact.FirstName == null) {
                 return null;
             }
             int updateId;
             Int32.TryParse(updateContact.Id, out updateId);
-            string updateFirstName = null;
+            /*string updateFirstName = null;
             string updateLastName = null;
             // check if contact has a last name
             if (updateContact.Name.Contains(" ")) {
@@ -204,13 +204,13 @@ namespace PBAPI.DbHandler
             }
             else {
                 updateFirstName = updateContact.Name;
-            }
+            }*/
 
             // set up a query to update a contact
             string query5 = "WITH upd1 AS (	UPDATE person_name SET first_name= @p1, last_name= @p2 WHERE id= @p4 returning id) UPDATE phone_book SET contact_number= @p3 FROM upd1 WHERE upd1.id=phone_book.id;";
             
-            updateFirstName = $"{updateFirstName}";
-            updateLastName = $"{updateLastName}";
+            updateContact.FirstName = $"{updateContact.FirstName}";
+            updateContact.LastName = $"{updateContact.LastName}";
             updateContact.ContactNumber = $"{updateContact.ContactNumber}";
 
             
@@ -219,8 +219,8 @@ namespace PBAPI.DbHandler
             try {
                 await using var dataSource = NpgsqlDataSource.Create(CONNECTION_STRING);
                 await using var command = dataSource.CreateCommand(query5);
-                command.Parameters.Add(new("p1", updateFirstName));
-                command.Parameters.Add(new("p2", updateLastName));
+                command.Parameters.Add(new("p1", updateContact.FirstName));
+                command.Parameters.Add(new("p2", updateContact.LastName));
                 command.Parameters.Add(new("p3", updateContact.ContactNumber));
                 command.Parameters.Add(new("p4", updateId));
 
