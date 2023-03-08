@@ -3,15 +3,17 @@
     public class Contact
     {
         public string Id { get; set; }
-        public string Name { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
         public string ContactNumber { get; set; }
 
         public Contact() {}
         
-        public Contact(string id, string name, string contact_number)
+        public Contact(string id, string firstname, string lastname, string contact_number)
         {
             Id = id;
-            Name = name;
+            FirstName = firstname;
+            LastName = lastname;
             ContactNumber = contact_number;
         }
     }
